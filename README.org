@@ -1,0 +1,116 @@
+#+title: buffer-url.el — URL of the current buffer
+
+A generic "URL of this buffer" interface for Emacs.
+Major modes report a URL through provider functions; two commands then
+copy or browse it.
+
+* Usage
+
+The two commands are autoloaded, so no =require= is needed after
+installation:
+
+#+begin_src emacs-lisp
+(keymap-set global-map "C-c l" #'buffer-url-copy)
+(keymap-set global-map "C-c o" #'buffer-url-browse)
+#+end_src
+
+= buffer-url-copy = puts the URL on the kill ring.
+= buffer-url-browse = opens it with =browse-url=.
+
+Both commands signal a =user-error= when the current buffer has no
+known URL.
+=buffer-url-get= returns the URL as a string, or nil, for use in your
+own code.
+
+* Providers
+
+A provider takes no arguments and returns a URL string, or nil.
+Register one globally, or buffer-locally to override the builtin
+providers:
+
+#+begin_src emacs-lisp
+(add-hook 'buffer-url-provider-functions #'my-mode-url nil t)
+#+end_src
+
+Providers run until the first non-nil result, so order matters.
+Use =DEPTH -10= for a provider that must win over the builtin ones.
+
+The builtin providers cover:
+
+- a Magit revision buffer: the commit URL, from =browse-at-remote=
+- a Magit or Dired buffer: the remote of the current project
+- any buffer inside a git repository: the =origin= remote
+
+Git remote URLs are converted to browsable form, so scp-like
+(=git@host:path=), =ssh://= and =git://= remotes work.
+A trailing slash and the =.git= suffix are stripped.
+
+=buffer-url-provider-functions= is a =defcustom=.
+Setting it through Customize keeps the builtin providers.
+
+* Pretty printing
+
+=buffer-url-pretty-print= shortens a URL for display in the mode line:
+it strips the =https://= prefix and replaces host names with the
+labels from =buffer-url-shorten-alist=.
+The alist is empty by default; set your own labels:
+
+#+begin_src emacs-lisp
+(setopt buffer-url-shorten-alist
+        '(("github.com" . "GH")
+          ("gitlab.com" . "GL")))
+#+end_src
+
+The result is cached per buffer and per URL in
+=buffer-url-pretty-printed=.
+A non-nil URL from =buffer-url-get= is cached per buffer too, so
+redisplay does not fork =git= again.
+
+= buffer-url-clear-cache = forgets every buffer's URL, the pretty
+cache and the repository remote cache.
+Changing =buffer-url-shorten-alist= clears the pretty cache itself.
+
+* Mode line
+
+Typical mode-line entry:
+
+#+begin_src emacs-lisp
+(setq-default mode-line-format
+              '("%e" mode-line-front-space
+                mode-line-buffer-identification
+                (:eval (when-let* ((url (buffer-url-get)))
+                         (concat " " (buffer-url-pretty-print url))))
+                mode-line-end-spaces))
+#+end_src
+
+* Requirements
+
+- Emacs 30.1 or newer
+- optional: Magit and browse-at-remote for their providers
+- optional: the =git= executable for the git remote provider
+
+The ERT suite needs =git= too: one test creates a throwaway repository.
+
+* Building
+
+#+begin_src sh
+nix build          # byte-compile with warnings as errors + ERT suite
+nix flake check    # package + ERT suite + checkdoc + package-lint
+nix fmt            # format the flake via treefmt
+#+end_src
+
+The ERT suite (=buffer-url-tests.el=) covers remote URL conversion, the
+provider hook, the repository remote cache and the pretty printer.
+It stays out of the installed package.
+
+The dev shell carries Emacs, Magit and browse-at-remote for interactive
+testing:
+
+#+begin_src sh
+nix develop
+emacs -l result/share/emacs/site-lisp/elpa/buffer-url-*/buffer-url-autoloads.el
+#+end_src
+
+* License
+
+AGPL-3.0-or-later.  See =LICENSE=.
