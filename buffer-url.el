@@ -145,6 +145,7 @@ run in remote buffers, and nil results are not cached."
   "Return non-nil if MODE is derived from any of MODES.
 Argument order fits the `pcase' `pred' pattern, which appends the
 matched value as the last argument."
+  (declare (side-effect-free t))
   (apply #'provided-mode-derived-p mode modes))
 
 (defun buffer-url--remote-url-to-web (url)
@@ -152,6 +153,7 @@ matched value as the last argument."
 Handle scp-like (git@HOST:PATH), ssh:// and git:// remotes.
 Strip a trailing slash and the .git suffix from the path.  Return
 nil when URL is not a string or not a http or https URL."
+  (declare (side-effect-free t))
   (when (stringp url)
     (setq url (string-trim url))
     (cond

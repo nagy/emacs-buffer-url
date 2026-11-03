@@ -38,6 +38,10 @@ buffer" interface.  Providers run in
   silence.
 - Prefix `buffer-url-` / `buffer-url--`; keep checkdoc and
   package-lint clean.
+- Pure helpers declare `(declare (side-effect-free t))` in the body.
+  Do not add `(pure t)` unless the body avoids forms that read
+  mutable global state, such as `string-match' (respects
+  `case-fold-search') or symbol properties.
 - Mode checks use `buffer-url--derived-p` (a `provided-mode-derived-p`
   wrapper), not a third-party `pcase` pattern.  `pcase` appends the
   matched value as the last argument, so the wrapper takes MODES first
