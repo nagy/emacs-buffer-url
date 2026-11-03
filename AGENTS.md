@@ -24,6 +24,8 @@ buffer" interface.  Providers run in
   entry.
 - `flake.nix` — melpaBuild package with `checkPhase`, the lint check,
   the devShell (Emacs + Magit + browse-at-remote + git), treefmt.
+  The package is wrapped in `lib.makeOverridable`, so consumers can
+  override `emacs`, `emacsPackages`, `git`, `version` and `src`.
 - `README.org` — user-facing documentation.
 
 ## Conventions
