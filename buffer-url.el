@@ -68,7 +68,6 @@ providers must come back on every set.  `add-hook' skips duplicates."
 
 (defcustom buffer-url-provider-functions nil
   "Functions that return the URL of the current buffer.
-
 Each function takes no arguments and returns a URL string, or nil
 when the current buffer has no URL.
 
@@ -95,20 +94,20 @@ change."
 
 (defcustom buffer-url-shorten-alist nil
   "Alist of host names and the short labels that replace them.
-\\(`buffer-url-pretty-print' replaces each host name with its label."
+`buffer-url-pretty-print' replaces each host name with its label."
   :type '(alist :key-type string :value-type string)
   :set #'buffer-url--set-shorten-alist
   :group 'buffer-url)
 
 (defvar-local buffer-url--current nil
-  "URL of the current buffer.  Cache for `buffer-url-get'.")
+  "URL of the current buffer, cached for `buffer-url-get'.")
 (put 'buffer-url--current 'permanent-local t)
 
 ;;;###autoload
 (defun buffer-url-get (&optional force)
   "Return the URL of the current buffer, or nil.
-If FORCE is non-nil, ignore the cached value.  Providers are not
-run in remote buffers, and nil results are not cached."
+If FORCE is non-nil, ignore the cached value.  Providers do not
+run in remote buffers, and nil results stay out of the cache."
   (when force
     (setq buffer-url--current nil))
   (unless (file-remote-p default-directory)
@@ -149,10 +148,10 @@ matched value as the last argument."
   (apply #'provided-mode-derived-p mode modes))
 
 (defun buffer-url--remote-url-to-web (url)
-  "Convert git remote URL to a browsable URL, or nil.
+  "Convert a git remote URL to a browsable URL, or nil.
 Handle scp-like (git@HOST:PATH), ssh:// and git:// remotes.
 Strip a trailing slash and the .git suffix from the path.  Return
-nil when URL is not a string or not a http or https URL."
+nil when URL is not a string, or not an http or https URL."
   (declare (side-effect-free t))
   (when (stringp url)
     (setq url (string-trim url))
@@ -174,7 +173,7 @@ nil when URL is not a string or not a http or https URL."
       (string-remove-suffix ".git" (string-remove-suffix "/" url)))))
 
 (defun buffer-url--provider-magit ()
-  "Return the remote URL of a Magit revision, Magit or Dired buffer."
+  "Return the URL of a Magit revision, or of a Magit or Dired buffer."
   (pcase major-mode
     ((pred (buffer-url--derived-p '(magit-revision-mode)))
      (when (require 'browse-at-remote nil t)
@@ -248,8 +247,8 @@ from `buffer-url-shorten-alist'.  Cache the result per URL."
 ;;;###autoload
 (defun buffer-url-clear-cache ()
   "Forget the cached URLs of every buffer.
-Also empty the repository remote cache, so a changed remote gets
-picked up."
+Also empty the repository remote cache, so a changed remote URL
+takes effect."
   (interactive)
   (dolist (buffer (buffer-list))
     (with-current-buffer buffer
