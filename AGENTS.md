@@ -21,7 +21,8 @@ buffer" interface.  Providers run in
 - `buffer-url-tests.el` — ERT suite for the pure helpers; excluded
   from the installed package by the recipe `:files` spec.  One test
   creates a throwaway git repository, so `git` is a `nativeCheckInputs`
-  entry.
+  entry.  `pkgs.writableTmpDirAsHomeHook` joins it, so the suite gets a
+  writable `HOME` without a manual `export HOME=$TMPDIR`.
 - `flake.nix` — melpaBuild package with `checkPhase`, the lint check,
   the devShell (Emacs + Magit + browse-at-remote + git), treefmt.
   The package is wrapped in `lib.makeOverridable`, so consumers can

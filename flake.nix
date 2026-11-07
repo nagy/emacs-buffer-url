@@ -80,7 +80,6 @@
               # printer.
               checkPhase = ''
                 runHook preCheck
-                export HOME=$TMPDIR
                 # `package-initialize' (as elpa2nix does at install time) is
                 # what puts the packageRequires dependencies on `load-path';
                 # a plain batch Emacs cannot see them otherwise.
@@ -100,8 +99,12 @@
               doCheck = true;
 
               # One test initializes a throwaway repository to exercise the
-              # remote lookup and its cache, so the suite needs git.
-              nativeCheckInputs = [ git ];
+              # remote lookup and its cache, so the suite needs git.  The
+              # nativeCheckInputs hooks also give the suite a writable HOME.
+              nativeCheckInputs = [
+                git
+                pkgs.writableTmpDirAsHomeHook
+              ];
 
               meta = {
                 description = "Copy or browse the URL of the current buffer";
