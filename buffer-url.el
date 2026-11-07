@@ -213,19 +213,6 @@ one repository fork `git' only once."
 (dolist (provider buffer-url--builtin-providers)
   (add-hook 'buffer-url-provider-functions (car provider) (cdr provider)))
 
-;; (declare-function dollar "dash-shell")
-;; (defun pypi-browse-url (url &rest _args)
-;;   (pcase-exhaustive url
-;;     ((url host filename)
-;;      (setq filename (string-replace "/project/" "" filename))
-;;      (switch-to-buffer (generate-new-buffer (concat "*pypi*" filename)))
-;;      (dollar (format "https://%s/pypi/%s/json"
-;;                      host
-;;                      (string-remove-suffix "/" filename)))
-;;      (setq-local buffer-url--current url))))
-;; (defvar browse-url-handlers)
-;; (add-to-list 'browse-url-default-handlers '("^https://pypi\\.org/project/" . pypi-browse-url))
-
 (defvar-local buffer-url-pretty-printed nil
   "Cached (URL . PRETTY) pair for `buffer-url-pretty-print'.")
 (put 'buffer-url-pretty-printed 'permanent-local t)
