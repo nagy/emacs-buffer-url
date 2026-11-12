@@ -141,7 +141,7 @@ run in remote buffers, and nil results stay out of the cache."
 (declare-function project-root "project")
 
 (defun buffer-url--derived-p (modes mode)
-  "Return non-nil if MODE is derived from any of MODES.
+  "Return non-nil if any of MODES derives MODE.
 Argument order fits the `pcase' `pred' pattern, which appends the
 matched value as the last argument."
   (declare (side-effect-free t))

@@ -63,9 +63,9 @@
               pname = "buffer-url";
               inherit version src;
 
-              # Keep the ERT suite out of the installed package but leave it
-              # in the source tree for `checkPhase' below.
-              files = ''(:defaults (:exclude "buffer-url-tests.el"))'';
+              # No `files' attribute: `:defaults' stages root `*.el' only
+              # and never descends into subdirectories, so `test/' stays out
+              # of the installed package without an exclusion rule.
 
               # No packageRequires: the Package-Requires header only lists
               # Emacs itself.  Magit and browse-at-remote are optional
@@ -80,18 +80,31 @@
               # printer.
               checkPhase = ''
                 runHook preCheck
+                # melpaBuild stages only the files matched by `files', so the
+                # `test/' tree must come back before the loader can see it.
+                cp -r ${./test} ./test
+                # printf repeats "-l %s" once per match.  failglob makes an
+                # empty glob a shell error, so the || guard fires; restore the
+                # default right after, later commands need normal globbing.
+                # The unquoted $test_args is intentional: the words must split
+                # into -l <file> pairs, and test file names never contain
+                # spaces.
+                shopt -s failglob
+                test_args=$(printf -- "-l %s " test/*-test.el) || { echo 'no tests matched test/*-test.el' >&2; exit 1; }
+                shopt -u failglob
                 # `package-initialize' (as elpa2nix does at install time) is
                 # what puts the packageRequires dependencies on `load-path';
                 # a plain batch Emacs cannot see them otherwise.
-                emacs --batch -L . \
+                emacs --batch -L . -L test \
                   --eval "(require 'package)" \
                   -f package-initialize \
                   --eval '(setq byte-compile-error-on-warn t)' \
-                  -f batch-byte-compile buffer-url-tests.el
-                emacs --batch -L . \
+                  -f batch-byte-compile test/*-test.el
+                # `-l' loads the .elc the line above produced.
+                emacs --batch -L . -L test \
                   --eval "(require 'package)" \
                   -f package-initialize \
-                  -l buffer-url-tests.elc \
+                  $test_args \
                   -f ert-run-tests-batch-and-exit
                 runHook postCheck
               '';
@@ -137,7 +150,8 @@
             # the main check.
             default = config.packages.buffer-url;
 
-            # checkdoc + package-lint: catch what byte-compilation cannot.
+            # checkdoc + package-lint over the package and its tests: catch
+            # what byte-compilation cannot.
             lint =
               pkgs.runCommand "buffer-url-lint"
                 {
@@ -145,15 +159,27 @@
                     (pkgs.emacsPackages.emacsWithPackages (p: [ p.package-lint ]))
                   ];
                   src = config.packages.buffer-url.src;
-                  meta.description = "checkdoc and package-lint for buffer-url.el";
+                  meta.description = "checkdoc and package-lint for buffer-url.el and its tests";
                 }
                 ''
                   export HOME=$TMPDIR
-                  cp "$src"/buffer-url.el .
+                  # `src' may be pre-filtered, so copy the whole tree instead
+                  # of assuming what melpaBuild staged.
+                  cp -r "$src"/. .
+                  # package-lint-main-file keeps package-lint from treating
+                  # each test file as its own package (missing header, wrong
+                  # prefix).
                   emacs --batch -l package-lint \
-                    -f package-lint-batch-and-exit buffer-url.el
+                    --eval '(setq package-lint-main-file "buffer-url.el")' \
+                    -f package-lint-batch-and-exit \
+                    *.el test/*.el
                   # checkdoc always exits zero; gate on its output instead.
-                  lint_log=$(emacs --batch -l checkdoc --eval '(checkdoc-file "buffer-url.el")' 2>&1)
+                  # checkdoc-arguments-in-order-flag is off by default but
+                  # makes the docstring argument order check useful.
+                  lint_log=$(emacs --batch -l checkdoc \
+                    --eval '(setq checkdoc-arguments-in-order-flag t)' \
+                    --eval '(mapc (lambda (f) (checkdoc-file f)) command-line-args-left)' \
+                    *.el test/*.el 2>&1)
                   if [ -n "$lint_log" ]; then printf '%s\n' "$lint_log"; exit 1; fi
                   touch $out
                 '';

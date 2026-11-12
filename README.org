@@ -99,8 +99,8 @@ nix flake check    # package + ERT suite + checkdoc + package-lint
 nix fmt            # format the flake via treefmt
 #+end_src
 
-The ERT suite (=buffer-url-tests.el=) covers remote URL conversion, the
-provider hook, the repository remote cache and the pretty printer.
+The ERT suite (=test/buffer-url-test.el=) covers remote URL conversion,
+the provider hook, the repository remote cache and the pretty printer.
 It stays out of the installed package.
 
 The dev shell carries Emacs, Magit and browse-at-remote for interactive

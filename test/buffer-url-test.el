@@ -1,4 +1,4 @@
-;;; buffer-url-tests.el --- Tests for buffer-url -*- lexical-binding: t; -*-
+;;; buffer-url-test.el --- Tests for buffer-url -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2026  Daniel Nagy
 
@@ -170,5 +170,5 @@
     (buffer-url--set-shorten-alist 'buffer-url-shorten-alist nil)
     (should-not buffer-url-pretty-printed)))
 
-(provide 'buffer-url-tests)
-;;; buffer-url-tests.el ends here
+(provide 'buffer-url-test)
+;;; buffer-url-test.el ends here

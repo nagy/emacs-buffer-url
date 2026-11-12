@@ -9,8 +9,18 @@ Emacs Lisp package.  The user documentation lives in `README.org`.
   finish.
 - `nix build` — build the package only.
 - `nix fmt` — format the flake.  Do not run the formatters standalone.
-- Ad-hoc test run: `emacs --batch -L . -l buffer-url-tests.el -f
+- Ad-hoc test run: `emacs --batch -L . -L test -l test/buffer-url-test.el -f
   ert-run-tests-batch-and-exit`.
+
+## Test layout
+
+- Tests live in `test/`, one file per source unit, named
+  `<unit>-test.el`.  Shared fixtures go in `buffer-url-test-helper.el`
+  and must not match `*-test.el`.
+- The `checkPhase` loader globs `test/*-test.el`, so a new test file
+  needs no flake edit.  Do not hardcode test file names there.
+- The lint check covers `*.el` and `test/*.el`.  Prefix every
+  `ert-deftest` with `buffer-url-`.
 
 ## Conventions
 
