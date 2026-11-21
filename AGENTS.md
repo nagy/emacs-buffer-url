@@ -1,37 +1,36 @@
-# AGENTS.md
+# AGENTS.md — emacs-buffer-url
 
-Emacs Lisp package.  The user documentation lives in `README.org`.
+## Purpose
 
-## Commands
+`buffer-url.el`: Emacs Lisp package that returns the URL of the current buffer.
+Emacs 30.1 or newer. License: AGPL-3.0-or-later. The user documentation lives in
+`README.org`.
 
-- `nix flake check` — the gate.  Byte-compiles with warnings as errors,
-  runs the ERT suite, checkdoc and package-lint.  Run it before you
-  finish.
+## Build and test
+
+- `nix flake check` — the gate. Byte-compile with warnings as errors, ERT suite,
+  checkdoc, package-lint. Run it before you finish.
 - `nix build` — build the package only.
-- `nix fmt` — format the flake.  Do not run the formatters standalone.
-- Ad-hoc test run: `emacs --batch -L . -L test -l test/buffer-url-test.el -f
+- `nix fmt` — format the flake. Do not run the formatters standalone.
+- Ad-hoc run: `emacs --batch -L . -L test -l test/buffer-url-test.el -f
   ert-run-tests-batch-and-exit`.
 
-## Test layout
+## Rules
 
-- Tests live in `test/`, one file per source unit, named
-  `<unit>-test.el`.  Shared fixtures go in `buffer-url-test-helper.el`
-  and must not match `*-test.el`.
-- The `checkPhase` loader globs `test/*-test.el`, so a new test file
-  needs no flake edit.  Do not hardcode test file names there.
-- The lint check covers `*.el` and `test/*.el`.  Prefix every
-  `ert-deftest` with `buffer-url-`.
+- Do not silence byte-compilation warnings. Fix them.
+- Load an optional runtime dependency (Magit, browse-at-remote, the `git`
+  executable) through `require ... nil t` plus `declare-function`. Do not add it
+  to `Package-Requires`.
+- Keep the full AGPL-3.0-or-later header in every `.el` file.
+- Keep checkdoc and package-lint clean.
+- Tests live in `test/`, one file per source unit, named `<unit>-test.el`.
+  Shared fixtures go in `buffer-url-test-helper.el` and must not match
+  `*-test.el`. Prefix every `ert-deftest` with `buffer-url-`.
+- The `checkPhase` loader globs `test/*-test.el`, so a new test file needs no
+  flake edit. Do not hardcode test file names there. The lint check covers
+  `*.el` and `test/*.el`.
 
 ## Conventions
 
-- Support Emacs 30.1 and newer.
-- Load an optional runtime dependency (Magit, browse-at-remote, the
-  `git` executable) through `require ... nil t` plus
-  `declare-function`.  Do not add it to `Package-Requires`.
-- Use the AGPL-3.0-or-later license.  Keep the full header in every .el
-  file.
-- Fix byte-compilation warnings.  Do not silence them.
-- Prefix public names with `buffer-url-` and private names with
-  `buffer-url--`.
-- Keep checkdoc and package-lint clean.
+- Prefix public names with `buffer-url-` and private names with `buffer-url--`.
 - Declare `(declare (side-effect-free t))` in a pure helper.
