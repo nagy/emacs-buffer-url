@@ -153,7 +153,7 @@
             # checkdoc + package-lint over the package and its tests: catch
             # what byte-compilation cannot.
             lint =
-              pkgs.runCommand "buffer-url-lint"
+              pkgs.runCommandLocal "buffer-url-lint"
                 {
                   nativeBuildInputs = [
                     (pkgs.emacsPackages.emacsWithPackages (p: [ p.package-lint ]))
