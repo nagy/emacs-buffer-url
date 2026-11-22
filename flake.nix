@@ -61,6 +61,7 @@
             }:
             emacsPackages.melpaBuild {
               pname = "buffer-url";
+              preferLocalBuild = true;
               inherit version src;
 
               # No `files' attribute: `:defaults' stages root `*.el' only
