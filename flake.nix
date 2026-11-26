@@ -23,12 +23,17 @@
     # A repository without commits reports the epoch, so the version only
     # becomes meaningful after the first commit..
     let
-      lastModifiedDate = inputs.self.sourceInfo.lastModifiedDate;
+      sourceInfo = inputs.self.sourceInfo or { };
+      lastModifiedDate = sourceInfo.lastModifiedDate or "19700101000000";
       commitDate = "${builtins.substring 0 4 lastModifiedDate}-${
         builtins.substring 4 2 lastModifiedDate
       }-${builtins.substring 6 2 lastModifiedDate}";
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
+      # `nix fmt' formats the flake via treefmt, never the formatters
+      # standalone. The module also adds the `checks.treefmt' gate.
+      imports = [ treefmt-nix.flakeModule ];
+
       # Emacs packages are pure Elisp: no ELF binaries, so evaluate on
       # every Linux arch (and darwin if the deps exist there).
       systems = [
@@ -198,9 +203,9 @@
             ];
           };
 
-          # `nix fmt' formats the flake via treefmt, never the formatters
-          # standalone.
-          formatter = treefmt-nix.lib.mkWrapper pkgs {
+          # treefmt-nix has no Elisp formatter, so this formats the flake
+          # itself.
+          treefmt = {
             projectRootFile = "flake.nix";
             programs.nixfmt.enable = true;
           };
